@@ -3,7 +3,7 @@ package com.lenguyenthanh.redux
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 
-class Store<State>(private val reducer: Reducer<State>, initialState: State) : Dispatcher {
+class Store<State>(private val reducer: Reducer<State>, initialState: State, val log: Log? = null) : Dispatcher {
 
     private val subject: BehaviorSubject<State> by lazy {
         BehaviorSubject.createDefault<State>(initialState)
@@ -15,6 +15,7 @@ class Store<State>(private val reducer: Reducer<State>, initialState: State) : D
 
     override fun dispatch(action: Action) {
         val newState = reducer(subject.value!!, action)
+        log?.log("SimpleRedux", "State: old ${subject.value}, action: $action, new: $newState")
         subject.onNext(newState)
     }
 
