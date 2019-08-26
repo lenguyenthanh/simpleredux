@@ -1,5 +1,5 @@
 package com.lenguyenthanh.redux
 
-interface Dispatcher {
+interface Dispatcher<Action> {
     fun dispatch(action: Action)
 }

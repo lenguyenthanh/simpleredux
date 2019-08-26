@@ -3,10 +3,10 @@ package com.lenguyenthanh.redux
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 
-class Store<State>(private val reducer: Reducer<State>, initialState: State, val log: Log? = null) : Dispatcher {
+class Store<State, Action>(private val reducer: Reducer<State, Action>, initialStateSupplier: () -> State, private val log: Log? = null) : Dispatcher<Action> {
 
     private val subject: BehaviorSubject<State> by lazy {
-        BehaviorSubject.createDefault<State>(initialState)
+        BehaviorSubject.createDefault<State>(initialStateSupplier())
     }
 
     fun states(): Observable<State> {
