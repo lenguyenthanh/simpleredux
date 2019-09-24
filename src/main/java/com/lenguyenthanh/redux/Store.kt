@@ -9,14 +9,16 @@ class Store<State, Action>(private val reducer: Reducer<State, Action>, initialS
         BehaviorSubject.createDefault<State>(initialStateSupplier())
     }
 
+    private val threadSafeSubject by lazy { subject.toSerialized() }
+
     fun states(): Observable<State> {
-        return subject.hide().distinctUntilChanged()
+        return threadSafeSubject.hide().distinctUntilChanged()
     }
 
     override fun dispatch(action: Action) {
         val newState = reducer(subject.value!!, action)
         log?.log("SimpleRedux", "State: old ${subject.value}, action: $action, new: $newState")
-        subject.onNext(newState)
+        threadSafeSubject.onNext(newState)
     }
 
     fun currentState(): State {
