@@ -7,7 +7,3 @@ fun <State, Action> combineReducers(vararg reducers: Reducer<State, Action>): Re
         }
     }
 }
-
-
-
-

@@ -17,7 +17,7 @@ class Store<State, Action>(private val reducer: Reducer<State, Action>, initialS
 
     override fun dispatch(action: Action) {
         val newState = reducer(subject.value!!, action)
-        log?.log("SimpleRedux", "State: old ${subject.value}, action: $action, new: $newState")
+        log?.log("SimpleRedux", "old ${subject.value}, action: $action, new: $newState")
         threadSafeSubject.onNext(newState)
     }
 
