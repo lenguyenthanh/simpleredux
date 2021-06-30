@@ -1,4 +1,4 @@
-package com.lenguyenthanh.redux
+package com.lenguyenthanh.redux.core
 
 fun <State, Action> combineReducers(vararg reducers: Reducer<State, Action>): Reducer<State, Action> {
     return { initial, action ->
