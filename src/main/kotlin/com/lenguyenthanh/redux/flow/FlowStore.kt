@@ -16,7 +16,7 @@ class FlowStore<State, Action>(
 ) : BaseStore<State, Action>(reducer, initialStateSupplier, log) {
 
     private val stateSubject by lazy {
-        MutableSharedFlow<State>(1)
+        MutableStateFlow<State>(initialStateSupplier())
     }
 
     private val listener = object : Listener<State> {
@@ -31,7 +31,7 @@ class FlowStore<State, Action>(
         setListener(listener)
     }
 
-    fun states(): Flow<State> =
+    fun states(): StateFlow<State> =
         stateSubject.distinctUntilChanged()
 
 }
