@@ -1,8 +1,9 @@
 package com.lenguyenthanh.redux.core
 
-import kotlinx.atomicfu.atomic
-import kotlinx.atomicfu.updateAndGet
-
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 
 open class BaseStore<State, Action>(
     private val reducer: Reducer<State, Action>,
@@ -10,23 +11,34 @@ open class BaseStore<State, Action>(
     private val log: Log? = null
 ) : Store<State, Action> {
 
-    private val state = atomic(initialStateSupplier())
-    private var listener: Listener<State>? = null
+    private val incomingAction = Channel<Action>(37)
 
-    override fun dispatch(action: Action) {
-        state.updateAndGet {
-            val newState = reducer(it, action)
-            log?.log("SimpleRedux", "old $it, action: $action, new: $newState")
-            listener?.onStateChange(newState)
-            newState
+    private var state = initialStateSupplier()
+    private lateinit var listener: Listener<State>
+
+    override suspend fun dispatch(action: Action) {
+        incomingAction.send(action)
+    }
+
+    fun CoroutineScope.init() = launch {
+        while (true) {
+            select<Unit> {
+                incomingAction.onReceive {
+                    val newState = reducer(state, it)
+                    log?.log("SimpleRedux", "Thread: ${Thread.currentThread().name}")
+                    log?.log("SimpleRedux", "old $state, action: $it, new: $newState")
+                    listener.onStateChange(newState)
+                    state = newState
+                }
+            }
         }
     }
 
-    override fun currentState(): State =
-        state.value
 
-    override fun setListener(listener: Listener<State>) {
+    override fun currentState(): State =
+        state
+
+    fun setListener(listener: Listener<State>) {
         this.listener = listener
     }
-
 }

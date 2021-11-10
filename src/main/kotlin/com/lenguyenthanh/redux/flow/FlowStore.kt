@@ -1,35 +1,45 @@
 package com.lenguyenthanh.redux.flow
 
-import com.lenguyenthanh.redux.core.BaseStore
-import com.lenguyenthanh.redux.core.Listener
-import com.lenguyenthanh.redux.core.Log
-import com.lenguyenthanh.redux.core.Reducer
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.runBlocking
+import com.lenguyenthanh.redux.core.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class FlowStore<State, Action>(
-    reducer: Reducer<State, Action>,
-    initialStateSupplier: () -> State,
-    log: Log? = null
-) : BaseStore<State, Action>(reducer, initialStateSupplier, log) {
+    private val reducer: Reducer<State, Action>,
+    private val initialStateSupplier: () -> State,
+    private val log: Log? = null
+) : Store<State, Action> {
 
-    private val stateSubject by lazy {
-        MutableStateFlow(currentState())
-    }
+    private val store = BaseStore(reducer, initialStateSupplier, log)
 
     private val listener = object : Listener<State> {
-        override fun onStateChange(state: State) {
-            runBlocking {
-                stateSubject.emit(state!!)
-            }
+        override suspend fun onStateChange(state: State) {
+            println("emit $state")
+            stateSubject.emit(state)
         }
     }
 
     init {
-        setListener(listener)
+        store.setListener(listener)
     }
 
-    fun states(): StateFlow<State> = stateSubject
+    fun CoroutineScope.init() = with(store) {
+        init()
+    }
+
+    private val stateSubject by lazy {
+        MutableSharedFlow<State>(1, 37)
+    }
+
+    fun states(): Flow<State> = stateSubject
+
+    override suspend fun dispatch(action: Action) {
+        store.dispatch(action)
+    }
+
+    override fun currentState(): State {
+        return store.currentState()
+    }
 
 }

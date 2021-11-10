@@ -5,13 +5,13 @@ buildscript {
     }
 
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.16.1")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.16.3")
     }
 }
 
 
 plugins {
-    kotlin("jvm") version "1.5.20"
+    kotlin("jvm") version "1.5.31"
     `maven-publish`
 }
 
@@ -24,13 +24,19 @@ version = "1.0-SNAPSHOT"
 repositories {
     mavenLocal()
     mavenCentral()
+    maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots")}
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
-    // RxJava
-    api("io.reactivex.rxjava2:rxjava:2.2.8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+
+    testImplementation ("io.kotest:kotest-runner-junit5:5.0.0.M3")
+    testImplementation ("io.kotest:kotest-assertions-core:5.0.0.M3")
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
 }
 
 publishing {
